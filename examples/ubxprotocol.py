@@ -98,8 +98,8 @@ if __name__ == "__main__":
     if platform == "win32":
         PORT = "COM13"
     else:
-        PORT = "/dev/tty.usbmodem14101"
-    BAUDRATE = 9600
+        PORT = "/dev/ttyACM0"
+    BAUDRATE = 921600
     TIMEOUT = 5
     NMEA = b"\x02\x00"
     UBX = b"\x01\x00"
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     print(f"Connecting to serial port {PORT} at {BAUDRATE} baud...")
     ubs.connect()
     print("Sending configuration message to receiver...")
-    ubs.send_configuration(BOTH)  # NMEA, UBX or BOTH
+    ubs.send_configuration(NMEA)  # NMEA, UBX or BOTH
     print("Disconnecting from serial port...")
     ubs.disconnect()
     print("Test Complete")

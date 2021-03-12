@@ -89,8 +89,8 @@ if __name__ == "__main__":
     if platform == "win32":
         PORT = "COM13"
     else:
-        PORT = "/dev/tty.usbmodem14101"
-    BAUDRATE = 9600
+        PORT = "/dev/ttyACM0"
+    BAUDRATE = 921600
     TIMEOUT = 5
 
     print("Instantiating UBXSetter class...")
