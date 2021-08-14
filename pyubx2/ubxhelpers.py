@@ -80,14 +80,22 @@ def itow2utc(itow: int) -> datetime.time:
     """
     Convert GPS Time Of Week to UTC time.
 
-    :param int itow: GPS Time Of Week
+    :param int itow: GPS Time Of Week in milliseconds
     :return: UTC time hh.mm.ss
     :rtype: datetime.time
 
     """
 
-    utc = datetime(1980, 1, 6) + timedelta(seconds=(itow / 1000) - (35 - 19))
-    return utc.time()
+    # utc = datetime(1980, 1, 6) + timedelta(seconds=(itow / 1000) - (35 - 19))
+    # return utc.time()
+
+    """
+    :param int itow: GPS Time Of Week in milliseconds
+    :return GPS Time Of Week in seconds
+    :rtype: int
+
+    """
+    return itow/1000
 
 
 def gpsfix2str(fix: int) -> str:
