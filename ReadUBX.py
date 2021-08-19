@@ -17,7 +17,7 @@ import pyubx2.exceptions as ube
 
 import signal
 import math
-# import can # python-can
+import can # python-can
 import random
 import struct
 
@@ -209,39 +209,40 @@ class UBXStreamer:
                 continue
     def _can_thread(self):
 
-        bus = can.interface.Bus(bustype='kvaser', channel=0, bitrate=500000)
+        # Using the Kvaser CANLIB module from python-can library 
+        bus = can.interface.Bus(bustype='kvaser', channel=0, bitrate=500000) 
 
         bus.set_filters(filters=[{"can_id":0xaa, "can_mask":0xff}])#, {"can_id":0x127, "can_mask":0x1ff}])
 
-        a = can.BufferedReader()
-        
+        reader = can.BufferedReader()
 
         while self._read_can and self._serial_object:
-            try:
-            # Add contents from can_read.py for reading and decoding
-                
+            try:                
                 msg = bus.recv() # Reading from the bus
-                a(msg) # Call listener
-                b = a.get_message() # Retrieve latest message
+                reader(msg) # Call listener
+                message = reader.get_message() # Retrieve latest message
                 
-                if b.arbitration_id != 0xaa: # To filter out 0x1aa
+                if message.arbitration_id != 0xaa: # To filter out 0x1aa and other IDs
                     continue
                 
-                time = b.timestamp # Timestamp (s) in floating point 
+                time = message.timestamp # Timestamp (s) in floating point 
                 # print(time)
+                # Removing leading digits and converting to milliseconds so timestamp can be sent
                 converted_time = hex(round(Decimal(time*1000)) & 0xFFFFFF) 
-                # print(f'corttr {converted_time}')
                 converted_time = converted_time[2:]
                 chunks2 = [converted_time[i:i+2] for i in range(0, len(converted_time), 2)]
 
-                t = b.data.hex() # Data in hex
+                message_hex = message.data.hex() # Data in hex
                 n = 4
-                chunks = [t[i:i+n] for i in range(0, len(t), n)]
+                chunks = [message_hex[i:i+n] for i in range(0, len(message_hex), n)]
 
                 wheel_speed_rl = int(chunks[len(chunks)-2], 16)
                 wheel_speed_rr = int(chunks[len(chunks)-1], 16)
+                
+                # Scale and Offset values from Prius.h
                 scale = 0.01
                 valueOffset = -67.669998
+
                 decoded_wheel_speed_rl = wheel_speed_rl*scale + valueOffset # in km/h
                 decoded_wheel_speed_rr = wheel_speed_rr*scale + valueOffset # in km/h
                 # print(f'wheel speed is {decoded_wheel_speed_rl}')
@@ -280,7 +281,7 @@ class UBXStreamer:
                 print("CAN Read/Write error")
                 continue
             
-        a.stop()
+        reader.stop()
 
     def dump(self, x):
         return ''.join([type(x).__name__, "('",
