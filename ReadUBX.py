@@ -17,7 +17,7 @@ import pyubx2.exceptions as ube
 
 import signal
 import math
-import can
+# import can # python-can
 import random
 import struct
 
@@ -207,7 +207,6 @@ class UBXStreamer:
             except:
                 print("RTCM Read/Write error")
                 continue
-
     def _can_thread(self):
 
         bus = can.interface.Bus(bustype='kvaser', channel=0, bitrate=500000)
@@ -241,14 +240,11 @@ class UBXStreamer:
 
                 wheel_speed_rl = int(chunks[len(chunks)-2], 16)
                 wheel_speed_rr = int(chunks[len(chunks)-1], 16)
-        
                 scale = 0.01
                 valueOffset = -67.669998
-
                 decoded_wheel_speed_rl = wheel_speed_rl*scale + valueOffset # in km/h
                 decoded_wheel_speed_rr = wheel_speed_rr*scale + valueOffset # in km/h
                 # print(f'wheel speed is {decoded_wheel_speed_rl}')
-
                 decoded_wheel_speed_rl = (decoded_wheel_speed_rl * 5/18) * 1000 # convert to m/s then scale up for ublox units
                 decoded_wheel_speed_rr = (decoded_wheel_speed_rr * 5/18) * 1000 # convert to m/s then scale up for ublox units
                 # print(f'wheel speed is {decoded_wheel_speed_rl}')
@@ -256,10 +252,10 @@ class UBXStreamer:
                 average_wheel_speed = (decoded_wheel_speed_rl+decoded_wheel_speed_rr)/2
                 
                 p = []
-                p.append(int(chunks2[2], 16))
-                p.append(int(chunks2[1], 16))
-                p.append(int(chunks2[0], 16))
-                p.append(0x00)
+                p.append(int(chunks2[2], 16)) # timestamp
+                p.append(int(chunks2[1], 16)) # timestamp
+                p.append(int(chunks2[0], 16)) # timestamp
+                p.append(0x00) # padding byte
 
                 p.append((0x00)) # flags
                 p.append((0x08)) # flags
@@ -436,8 +432,8 @@ if __name__ == "__main__":
     ubp.ubx_proto_only() # Turn on UBX messages only.
 
     
-    # ubp.start_can_thread() # TO TEST
-    # ubp.start_rtcm_thread() # TO TEST
+    # ubp.start_can_thread() # Works
+    # ubp.start_rtcm_thread() # Ntrip client doesnt work
 
     indefinite = True
     if(indefinite == False):
@@ -446,9 +442,9 @@ if __name__ == "__main__":
         while True:
             sleep(1)
 
-    # ubp.stop_rtcm_thread() # TO TEST
+    # ubp.stop_rtcm_thread()
 
-    # ubp.stop_can_thread() # TO TEST
+    # ubp.stop_can_thread()
 
     ubp.stop_read_thread()
     ubp.disconnect()

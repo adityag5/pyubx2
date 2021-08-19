@@ -188,7 +188,6 @@ class NtripClient(object):
                 elif line.find("HTTP/1.1 200 OK")>=0:
                     #Request was valid
                     self.socket.sendall(self.getGGABytes())
-            # print('im here')
             # return None
         
         while True:
